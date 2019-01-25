@@ -28,103 +28,7 @@ for char in raw_data:
 		lines.append(tmp_line)
 		i += 1
 		tmp_line = ''
-
-print("{0}\n".format(lines))
-
-print("Name:                                            {0}".format(lines[0].strip()))
-print("Number:                                          {0}".format(lines[1][2:7].strip()))
-print("Classification:                                  {0}".format(lines[1][7].strip()))
-print("Launch Year:                                     {0}".format(lines[1][8:11].strip()))
-print("Launch Number:                                   {0}".format(lines[1][11:14].strip()))
-print("Piece:                                           {0}".format(lines[1][14:18].strip()))
-print("Epoch Year:                                      {0}".format(lines[1][18:20].strip()))
-
-epoch_time = float(lines[1][20:32].strip())
-epoch_day = math.floor(epoch_time) 
-print("Epoch Day:                                       {0}".format(epoch_day))
-epoch_time = epoch_time - epoch_day 
-epoch_hour = 24 * epoch_time
-print("Epoch Hour:                                      {0}".format(epoch_hour))
-epoch_hour = epoch_hour - math.floor(epoch_hour)
-epoch_minute = 60 * epoch_hour
-print("Epoch Minute:                                    {0}".format(epoch_minute))
-epoch_minute = epoch_minute -  math.floor(epoch_minute)
-epoch_second = 60 * epoch_minute
-print("Epoch Second:                                    {0}".format(epoch_second))
-
-print("First Time Derivative of Mean Motion:            {0}".format(lines[1][32:44].strip()))
-n0_dot = lines[1][32:44].strip()
-n0_dot = 2 * float(n0_dot) # rev per day squared and reverse 2 division
-print("----n0_dot", n0_dot, "rev per day squared")
-n0_dot = n0_dot * REVOLUTIONS_TO_RADIANS / (DAYS_TO_MINUTES * DAYS_TO_MINUTES) # radians per min squared
-
-print("----n0_dot", n0_dot, "radians per min squared")
-
-print("Second Time Derivative of Mean Motion:           {0}".format(lines[1][44:53].strip()))
-temp = lines[1][44:53]
-mantissa = temp[0:6]
-power = temp[-3:]
-mantissa = int(mantissa)
-print("--------mantissa", mantissa)
-power = int(power)
-print("--------power", power)
-n0_double_dot = 6 * (mantissa / 100000) * 10 ** power # reverse 6 division
-print("----n0_double_dot", n0_double_dot, "rev per day cubed")
-n0_double_dot *= REVOLUTIONS_TO_RADIANS / (DAYS_TO_MINUTES ** 3) # radians per min cubed
-print("----n0_double_dot", n0_double_dot, "radians per min cubed")
-
-print("BSTAR Drag Term:                                 {0}".format(lines[1][53:62].strip()))
-print("Ephemeris Type:                                  {0}".format(lines[1][62:64].strip()))
-print("Element Set Number:                              {0}".format(lines[1][64:68].strip()))
-print("Checksum:                                        {0}".format(lines[1][68:70].strip()))
-
-print("\n")
-print("Satellite Number:                                {0}".format(lines[2][2:8].strip()))
-print("Inclination:                                     {0}".format(lines[2][8:17].strip()))
-i0 = lines[2][8:17].strip()
-i0 = float(i0)
-print("----i0", i0, "degrees")
-i0 = radians(i0)
-print("----i0", i0, "radians")
-
-print("Right Ascension of Ascending Node:               {0}".format(lines[2][17:26].strip()))
-omega0 = lines[2][17:26].strip()
-omega0 = float(omega0)
-print("----omega0", omega0, "degrees")
-omega0 = radians(omega0)
-print("----omega0", omega0, "radians")
-
-print("Eccentricity:                                    {0}".format(lines[2][26:34].strip()))
-e0 = lines[2][26:34].strip()
-e0 = float(e0) / (10 ** 7)
-print("----e0", e0, "[unitless (decimal point assumed converted)]")
-
-print("Argument of Perigee:                             {0}".format(lines[2][34:43].strip()))
-w0 = lines[2][34:43].strip()
-w0 = float(w0) 
-print("----w0", w0, "degrees")
-w0 = radians(w0)
-print("----w0", w0, "radians")
-
-print("Mean Anomaly:                                    {0}".format(lines[2][43:52].strip()))
-M0 = lines[2][43:52].strip()
-M0 = float(M0)
-print("----M0", M0, "degrees")
-M0 = radians(M0)
-print("----M0", M0, "radians")
-
-print("Mean Motion:                                     {0}".format(lines[2][52:63].strip()))
-n0 = lines[2][52:63].strip()
-n0 = float(n0)
-print("----n0", n0, "rev per day")
-n0 *= REVOLUTIONS_TO_RADIANS / DAYS_TO_MINUTES
-print("----n0", n0, "radians per min")
-
-print("Revolutions at Epoch:                            {0}".format(lines[2][63:68].strip()))
-print("Checksum:                                        {0}".format(lines[2][68:70].strip()))
-
-
-def SGP(t_since):
+def sgp(t):
     # Initializing constants
     # print("\n------------INITIALIZING CONSTANTS------------\n")
 
@@ -141,7 +45,6 @@ def SGP(t_since):
     cos_i0 = math.cos(i0)
     delta1 = (3 / 4) * J2 * (aE * aE) / (a1 * a1) * (3 * cos_i0 * cos_i0 - 1) / (1 - e0 * e0) ** (3/2)
     # print("delta1 =", delta1, "[unitless]")
-
     a0 = a1 * (1 - 1 / 3 * delta1 - delta1 * delta1 - 134 / 81 * delta1 * delta1 * delta1)
     # print("a0 =", a0, "er")
 
@@ -162,7 +65,7 @@ def SGP(t_since):
 
     # Update for secular effects of atmospheric drag and gravitation
     # print("\n-----SECULAR GRAVITY AND ATMOSPHERIC DRAG-----\n")
-    a = n0 + n0_dot * t_since + n0_double_dot / 2 * t_since * t_since
+    a = n0 + n0_dot * t + n0_double_dot / 2 * t * t
     a = a0 * (n0 / a) ** (2 / 3)
     # print("a =", a, "er")
 
@@ -174,15 +77,15 @@ def SGP(t_since):
     p = a * (1 - e * e)
     # print("p =", p, "er")
 
-    omega_s0 = omega0 + d_omega_dt * t_since
+    omega_s0 = omega0 + d_omega_dt * t
     # print("omega_s0 =", omega_s0, "radians")
 
-    w_s0 = w0 + dw_dt * t_since
+    w_s0 = w0 + dw_dt * t
     # print("w_s0 =", w_s0, "radians")
 
-    Ls = L0 + (n0 + dw_dt + d_omega_dt) * t_since \
-        + n0_dot * t_since * t_since / 2 \
-        + n0_double_dot * t_since * t_since * t_since / 6 
+    Ls = L0 + (n0 + dw_dt + d_omega_dt) * t \
+        + n0_dot * t * t / 2 \
+        + n0_double_dot * t * t * t / 6 
     Ls = Ls % (2 * math.pi)
     # print("Ls =", Ls, "radians")
 
@@ -363,7 +266,7 @@ def SGP(t_since):
     x_dot *= ER_TO_KM / MINUTES_TO_SECONDS
     y_dot *= ER_TO_KM / MINUTES_TO_SECONDS
     z_dot *= ER_TO_KM / MINUTES_TO_SECONDS
-    print("Time since epoch =", t_since, "minutes")
+    print("Time since epoch =", t, "minutes")
     print("r =")
     print("    ", x)   
     print("    ", y)   
@@ -373,9 +276,120 @@ def SGP(t_since):
     print("    ", x_dot)
     print("    ", y_dot)
     print("    ", z_dot)
+    
+print("{0}\n".format(lines))
+
+satellite_name = format(lines[0].strip())
+print("Name:                                            " + satellite_name)
+satellite_number = format(lines[1][2:7].strip())
+print("Number:                                          " + satellite_number)
+classification = format(lines[1][7].strip())
+print("Classification:                                  " + classification)
+launch_year = format(lines[1][8:11].strip())
+print("Launch Year:                                     " + launch_year)
+launch_number = format(lines[1][11:14].strip())
+print("Launch Number:                                   " + launch_number)
+peice = format(lines[1][14:18].strip())
+print("Piece:                                           " + peice)
+epoch_year = format(lines[1][18:20].strip())
+print("Epoch Year:                                      " + epoch_year)
+
+epoch_time = float(lines[1][20:32].strip())
+epoch_day = math.floor(epoch_time) 
+print("Epoch Day:                                       {0}".format(epoch_day))
+epoch_time = epoch_time - epoch_day 
+epoch_hour = 24 * epoch_time
+print("Epoch Hour:                                      {0}".format(epoch_hour))
+epoch_hour = epoch_hour - math.floor(epoch_hour)
+epoch_minute = 60 * epoch_hour
+print("Epoch Minute:                                    {0}".format(epoch_minute))
+epoch_minute = epoch_minute -  math.floor(epoch_minute)
+epoch_second = 60 * epoch_minute
+print("Epoch Second:                                    {0}".format(epoch_second))
+
+print("First Time Derivative of Mean Motion:            {0}".format(lines[1][32:44].strip()))
+n0_dot = lines[1][32:44].strip()
+n0_dot = 2 * float(n0_dot) # rev per day squared and reverse 2 division
+print("----n0_dot", n0_dot, "rev per day squared")
+n0_dot = n0_dot * REVOLUTIONS_TO_RADIANS / (DAYS_TO_MINUTES * DAYS_TO_MINUTES) # radians per min squared
+
+print("----n0_dot", n0_dot, "radians per min squared")
+
+print("Second Time Derivative of Mean Motion:           {0}".format(lines[1][44:53].strip()))
+temp = lines[1][44:53]
+mantissa = temp[0:6]
+power = temp[-3:]
+mantissa = int(mantissa)
+print("--------mantissa", mantissa)
+power = int(power)
+print("--------power", power)
+n0_double_dot = 6 * (mantissa / 100000) * 10 ** power # reverse 6 division
+print("----n0_double_dot", n0_double_dot, "rev per day cubed")
+n0_double_dot *= REVOLUTIONS_TO_RADIANS / (DAYS_TO_MINUTES ** 3) # radians per min cubed
+print("----n0_double_dot", n0_double_dot, "radians per min cubed")
+
+bstar_drag_term = format(lines[1][53:62].strip())
+print("BSTAR Drag Term:                                 " + str(bstar_drag_term))
+ephemeris_type = format(lines[1][62:64].strip())
+print("Ephemeris Type:                                  " + str(ephemeris_type))
+element_set_number = format(lines[1][64:68].strip())
+print("Element Set Number:                              " + str(element_set_number))
+checksum = format(lines[1][68:70].strip())
+print("Checksum:                                        " + str(checksum))
+
+print("\n")
+print("Satellite Number:                                " + str(satellite_number))
+inclination = format(lines[2][8:17].strip())
+print("Inclination:                                     " + inclination)
+i0 = lines[2][8:17].strip()
+i0 = float(i0)
+print("----i0", i0, "degrees")
+i0 = radians(i0)
+print("----i0", i0, "radians")
+
+print("Right Ascension of Ascending Node:               {0}".format(lines[2][17:26].strip()))
+omega0 = lines[2][17:26].strip()
+omega0 = float(omega0)
+print("----omega0", omega0, "degrees")
+omega0 = radians(omega0)
+print("----omega0", omega0, "radians")
+
+print("Eccentricity:                                    {0}".format(lines[2][26:34].strip()))
+e0 = lines[2][26:34].strip()
+e0 = float(e0) / (10 ** 7)
+print("----e0", e0, "[unitless (decimal point assumed converted)]")
+
+print("Argument of Perigee:                             {0}".format(lines[2][34:43].strip()))
+w0 = lines[2][34:43].strip()
+w0 = float(w0) 
+print("----w0", w0, "degrees")
+w0 = radians(w0)
+print("----w0", w0, "radians")
+
+print("Mean Anomaly:                                    {0}".format(lines[2][43:52].strip()))
+M0 = lines[2][43:52].strip()
+M0 = float(M0)
+print("----M0", M0, "degrees")
+M0 = radians(M0)
+print("----M0", M0, "radians")
+
+print("Mean Motion:                                     {0}".format(lines[2][52:63].strip()))
+n0 = lines[2][52:63].strip()
+n0 = float(n0)
+print("----n0", n0, "rev per day")
+n0 *= REVOLUTIONS_TO_RADIANS / DAYS_TO_MINUTES
+print("----n0", n0, "radians per min")
+
+print("Revolutions at Epoch:                            {0}".format(lines[2][63:68].strip()))
+print("Checksum:                                        {0}".format(lines[2][68:70].strip()))
+
+
+
 
 print("\n\n\n-------------SGP VALUES------------\n\n\n")
 t = 0
 while t <= 1440:
-    SGP(t)
+    sgp(t)
     t += 360
+    #Print new version of tle
+    print("1 " + str(satellite_number))
