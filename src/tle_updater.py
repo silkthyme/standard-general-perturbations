@@ -8,7 +8,7 @@ DAYS_TO_MINUTES = 1440
 MINUTES_TO_SECONDS = 60
 ER_TO_KM = 6378.135
 
-# Obtain input as string
+# Obtain input as stringc
 raw_data = ''
 tmp_line = ''
 lines = []
