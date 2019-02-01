@@ -284,22 +284,21 @@ launch_year = format(lines[1][8:11].strip())
 launch_number = format(lines[1][11:14].strip())
 peice = format(lines[1][14:18].strip())
 epoch_year = format(lines[1][18:20].strip())
-print("Epoch Year:                                      " + epoch_year)
 
 epoch_time = float(lines[1][20:32].strip())
 epoch_day = math.floor(epoch_time) 
-print("Epoch Day:                                       {0}".format(epoch_day))
-epoch_time = epoch_time - epoch_day 
+print("Epoch Day:                                       " + str(epoch_day))
+epoch_time-=epoch_day 
 epoch_hour = 24 * epoch_time
-print("Epoch Hour:                                      {0}".format(epoch_hour))
-epoch_hour = epoch_hour - math.floor(epoch_hour)
+print("Epoch Hour:                                      " + str(epoch_hour))
+epoch_hour-=math.floor(epoch_hour)
 epoch_minute = 60 * epoch_hour
-print("Epoch Minute:                                    {0}".format(epoch_minute))
-epoch_minute = epoch_minute -  math.floor(epoch_minute)
+print("Epoch Minute:                                    " + str(epoch_minute))
+epoch_minute-=math.floor(epoch_minute)
 epoch_second = 60 * epoch_minute
-print("Epoch Second:                                    {0}".format(epoch_second))
+print("Epoch Second:                                    " + str(epoch_second))
 
-print("First Time Derivative of Mean Motion:            {0}".format(lines[1][32:44].strip()))
+print("First Time Derivative of Mean Motion:            " + str(lines[1][32:44].strip()))
 n0_dot = lines[1][32:44].strip()
 n0_dot = 2 * float(n0_dot) # rev per day squared and reverse 2 division
 print("----n0_dot", n0_dot, "rev per day squared")
@@ -307,7 +306,7 @@ n0_dot = n0_dot * REVOLUTIONS_TO_RADIANS / (DAYS_TO_MINUTES * DAYS_TO_MINUTES) #
 
 print("----n0_dot", n0_dot, "radians per min squared")
 
-print("Second Time Derivative of Mean Motion:           {0}".format(lines[1][44:53].strip()))
+print("Second Time Derivative of Mean Motion:           "+str(lines[1][44:53].strip()))
 temp = lines[1][44:53]
 mantissa = temp[0:6]
 power = temp[-3:]
@@ -339,41 +338,41 @@ print("----i0", i0, "degrees")
 i0 = radians(i0)
 print("----i0", i0, "radians")
 
-print("Right Ascension of Ascending Node:               {0}".format(lines[2][17:26].strip()))
+print("Right Ascension of Ascending Node:               " + str(lines[2][17:26].strip()))
 omega0 = lines[2][17:26].strip()
 omega0 = float(omega0)
 print("----omega0", omega0, "degrees")
 omega0 = radians(omega0)
 print("----omega0", omega0, "radians")
 
-print("Eccentricity:                                    {0}".format(lines[2][26:34].strip()))
+print("Eccentricity:                                    " + str(lines[2][26:34].strip()))
 e0 = lines[2][26:34].strip()
 e0 = float(e0) / (10 ** 7)
 print("----e0", e0, "[unitless (decimal point assumed converted)]")
 
-print("Argument of Perigee:                             {0}".format(lines[2][34:43].strip()))
+print("Argument of Perigee:                             " + str(lines[2][34:43].strip()))
 w0 = lines[2][34:43].strip()
 w0 = float(w0) 
 print("----w0", w0, "degrees")
 w0 = radians(w0)
 print("----w0", w0, "radians")
 
-print("Mean Anomaly:                                    {0}".format(lines[2][43:52].strip()))
+print("Mean Anomaly:                                    " + str(lines[2][43:52].strip()))
 M0 = lines[2][43:52].strip()
 M0 = float(M0)
 print("----M0", M0, "degrees")
 M0 = radians(M0)
 print("----M0", M0, "radians")
 
-print("Mean Motion:                                     {0}".format(lines[2][52:63].strip()))
+print("Mean Motion:                                     " + str(lines[2][52:63].strip()))
 n0 = lines[2][52:63].strip()
 n0 = float(n0)
 print("----n0", n0, "rev per day")
 n0 *= REVOLUTIONS_TO_RADIANS / DAYS_TO_MINUTES
 print("----n0", n0, "radians per min")
 
-print("Revolutions at Epoch:                            {0}".format(lines[2][63:68].strip()))
-print("Checksum:                                        {0}".format(lines[2][68:70].strip()))
+print("Revolutions at Epoch:                            " + str(lines[2][63:68].strip()))
+print("Checksum:                                        " + str(lines[2][68:70].strip()))
 
 
 
