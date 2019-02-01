@@ -36,8 +36,6 @@ def sgp(t):
     a1 = (k_e / n0) ** (2 / 3) 
     # print("a1 =", a1, "er")
 
-    # https://ipnpr.jpl.nasa.gov/progress_report/42-196/196C.pdf
-    # https://space.stackexchange.com/questions/22976/for-the-mathematical-relationship-between-j2-km5-s2-and-dimensionless-j2-w?rq=1
     J2 = 0.00108262545
     # using the value from the paper
     JE = 5.413080 * 10 ** -4 * 2
@@ -277,20 +275,14 @@ def sgp(t):
     print("    ", y_dot)
     print("    ", z_dot)
     
-print("{0}\n".format(lines))
+#print("{0}\n".format(lines))
 
 satellite_name = format(lines[0].strip())
-print("Name:                                            " + satellite_name)
 satellite_number = format(lines[1][2:7].strip())
-print("Number:                                          " + satellite_number)
 classification = format(lines[1][7].strip())
-print("Classification:                                  " + classification)
 launch_year = format(lines[1][8:11].strip())
-print("Launch Year:                                     " + launch_year)
 launch_number = format(lines[1][11:14].strip())
-print("Launch Number:                                   " + launch_number)
 peice = format(lines[1][14:18].strip())
-print("Piece:                                           " + peice)
 epoch_year = format(lines[1][18:20].strip())
 print("Epoch Year:                                      " + epoch_year)
 
@@ -391,5 +383,7 @@ t = 0
 while t <= 1440:
     sgp(t)
     t += 360
-    #Print new version of tle
-    print("1 " + str(satellite_number))
+    #Print new version of tle after epoch t
+    print("The TLE after time " + str(t) + " is:")
+    print(satellite_name)
+    print("1 " + str(satellite_number) + str(classification) + " " + str(launch_number) + str(launch_number) + str(peice))
