@@ -1,6 +1,7 @@
 import sys
 import math
 from math import radians
+import turtle
 
 # Useful Conversions
 REVOLUTIONS_TO_RADIANS = 2 * math.pi
@@ -273,8 +274,7 @@ def sgp(t):
     print("r_dot =")
     print("    ", x_dot)
     print("    ", y_dot)
-    print("    ", z_dot)
-    
+    print("    ", z_dot)    
 #print("{0}\n".format(lines))
 
 satellite_name = format(lines[0].strip())
@@ -284,21 +284,13 @@ launch_year = format(lines[1][8:11].strip())
 launch_number = format(lines[1][11:14].strip())
 peice = format(lines[1][14:18].strip())
 epoch_year = format(lines[1][18:20].strip())
+epoch_day = format(lines[1][20:23].strip())
+epoch_day_fraction = format(lines[1][24:32].strip())
 
-epoch_time = float(lines[1][20:32].strip())
-epoch_day = math.floor(epoch_time) 
-print("Epoch Day:                                       " + str(epoch_day))
-epoch_time-=epoch_day 
-epoch_hour = 24 * epoch_time
-print("Epoch Hour:                                      " + str(epoch_hour))
-epoch_hour-=math.floor(epoch_hour)
-epoch_minute = 60 * epoch_hour
-print("Epoch Minute:                                    " + str(epoch_minute))
-epoch_minute-=math.floor(epoch_minute)
-epoch_second = 60 * epoch_minute
-print("Epoch Second:                                    " + str(epoch_second))
 
-print("First Time Derivative of Mean Motion:            " + str(lines[1][32:44].strip()))
+
+first_time_derivative_of_mean_motion  = str(lines[1][32:44].strip())
+print("First Time Derivative of Mean Motion:            " + first_time_derivative_of_mean_motion)
 n0_dot = lines[1][32:44].strip()
 n0_dot = 2 * float(n0_dot) # rev per day squared and reverse 2 division
 print("----n0_dot", n0_dot, "rev per day squared")
@@ -331,7 +323,7 @@ print("Checksum:                                        " + str(checksum))
 print("\n")
 print("Satellite Number:                                " + str(satellite_number))
 inclination = format(lines[2][8:17].strip())
-print("Inclination:                                     " + inclination)
+print("Inclination:                                     " + str(inclination))
 i0 = lines[2][8:17].strip()
 i0 = float(i0)
 print("----i0", i0, "degrees")
@@ -385,4 +377,4 @@ while t <= 1440:
     #Print new version of tle after epoch t
     print("The TLE after time " + str(t) + " is:")
     print(satellite_name)
-    print("1 " + str(satellite_number) + str(classification) + " " + str(launch_number) + str(launch_number) + str(peice))
+    print("1 " + str(satellite_number) + str(classification) + " " + str(launch_number) + str(launch_number) + str(peice) + " " + str(epoch_year) + str(epoch_day) + "." + str(int(epoch_day_fraction) + int(t)))
