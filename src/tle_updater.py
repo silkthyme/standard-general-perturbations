@@ -29,7 +29,8 @@ for char in raw_data:
 		lines.append(tmp_line)
 		i += 1
 		tmp_line = ''
-def sgp(t):
+
+def initialize_constants(t, n0_dot, n0_double_dot, i0, omega0,e0, w0, M0, n0):
     # Initializing constants
     # print("\n------------INITIALIZING CONSTANTS------------\n")
 
@@ -38,10 +39,12 @@ def sgp(t):
     # print("a1 =", a1, "er")
 
     J2 = 0.00108262545
+    J3 = -0.253881 * 10 ** -5 # paper
     # using the value from the paper
     JE = 5.413080 * 10 ** -4 * 2
     aE = 1 # radius of the earth
     cos_i0 = math.cos(i0)
+    sin_i0 = math.sin(i0)
     delta1 = (3 / 4) * J2 * (aE * aE) / (a1 * a1) * (3 * cos_i0 * cos_i0 - 1) / (1 - e0 * e0) ** (3/2)
     # print("delta1 =", delta1, "[unitless]")
     a0 = a1 * (1 - 1 / 3 * delta1 - delta1 * delta1 - 134 / 81 * delta1 * delta1 * delta1)
@@ -62,6 +65,9 @@ def sgp(t):
     dw_dt = 3 / 4 * J2 * (aE * aE) / (p0 * p0) * n0 * (5 * cos_i0 * cos_i0 - 1)
     # print("dw_dt =", dw_dt, "radians per min")
 
+    return (k_e, J2, J3, aE, cos_i0, sin_i0, a0, q0, L0, d_omega_dt, dw_dt)
+
+def secular_gravity_and_atmospheric_drag(t, n0, n0_dot, a0, q0, omega0, d_omega_dt, w0, dw_dt, L0):
     # Update for secular effects of atmospheric drag and gravitation
     # print("\n-----SECULAR GRAVITY AND ATMOSPHERIC DRAG-----\n")
     a = n0 + n0_dot * t + n0_double_dot / 2 * t * t
@@ -88,12 +94,9 @@ def sgp(t):
     Ls = Ls % (2 * math.pi)
     # print("Ls =", Ls, "radians")
 
+    return (a, e, p, omega_s0, w_s0, Ls)
 
-    # more constants...
-    J3 = -0.253881 * 10 ** -5 # paper
-    sin_i0 = math.sin(i0)
-
-
+def long_period_periodics(e, w_s0, Ls, J2, J3, aE, p, cos_i0, sin_i0):
     # print("\n------------LONG PERIOD PERIODICS------------\n")
 
     a_xNSL = e * math.cos(w_s0)
@@ -106,7 +109,9 @@ def sgp(t):
     L = L % (2 * math.pi)
     # print("L =", L, "radians")
 
+    return (a_xNSL, a_yNSL, L)
 
+def keplers_equation(L, omega_s0, a_xNSL, a_yNSL ):
     # print("\n-----------SOLVING KEPLERS EQUATION-----------\n")
     U = L - omega_s0
     U = U % (2 * math.pi)
@@ -137,9 +142,11 @@ def sgp(t):
 
     # print("E =", E, "radians")
 
+    return (E, cosE, sinE)
 
+def short_period_preliminary_quantities(a_xNSL, a_yNSL, cosE, sinE, k_e, a):
     # print("\n----SHORT PERIOD PRELIMINARY QUANTITIES----\n")
-
+    
     eCosE = a_xNSL * cosE + a_yNSL * sinE
     # print("eCosE =", eCosE, "[unitless]")
 
@@ -176,11 +183,13 @@ def sgp(t):
     # print("    sinU / cosU =", sinU/cosU)
     # print("    tan(u) =", math.tan(u))
 
+    return (pL, r, r_dot, r_v_dot, sinU, cosU, u)
+
+def update_for_short_periodics(cosU, sinU, pL, r , J2, aE, sin_i0, cos_i0, omega_s0, u):
     # print("\n-------UPDATE FOR SHORT PERIODICS-------\n")
     # more constants...
     sin2u = (cosU + cosU) * sinU
     cos2u = 1 - 2 * sinU * sinU
-    pL_squared = pL * pL
 
     r_k = r + J2 / 4 * (aE * aE) / pL * sin_i0 * sin_i0 * cos2u
     # print("r_k =", r_k, "er")
@@ -194,6 +203,9 @@ def sgp(t):
     i_k = i0 + 3 / 4 * J2 * (aE * aE) / (pL * pL) * sin_i0 * cos_i0 * cos2u
     # print("i_k =", i_k, "radians")
 
+    return (r_k, u_k, omega_k, i_k)
+
+def orientation_vectors(u_k, omega_k, i_k):
     # print("\n------------ORIENTATION VECTORS------------\n")
     # constants ...
     sin_u_k = math.sin(u_k)
@@ -206,18 +218,10 @@ def sgp(t):
     Mx = -sin_omega_k * cos_i_k
     My = cos_omega_k * cos_i_k
     Mz = sin_i_k
-    # print("M =")
-    # print("    ", Mx)
-    # print("    ", My)
-    # print("    ", Mz)
 
     Nx = cos_omega_k
     Ny = sin_omega_k
     Nz = 0
-    # print("N =")
-    # print("    ", Nx)
-    # print("    ", Ny)
-    # print("    ", Nz)
 
     Ux = Mx * sin_u_k + Nx * cos_u_k
     Uy = My * sin_u_k + Ny * cos_u_k
@@ -227,54 +231,68 @@ def sgp(t):
     Vy = My * cos_u_k - Ny * sin_u_k
     Vz = Mz * cos_u_k - Nz * sin_u_k
 
-    # print("U =")
-    # print("    ", Ux)
-    # print("    ", Uy)
-    # print("    ", Uz)
+    return ([Ux, Uy, Uz], [Vx, Vy, Vz])
 
-    # print("V =")
-    # print("    ", Vx)
-    # print("    ", Vy)
-    # print("    ", Vz)
-
+def position_and_velocity(r_k, r_dot, r_v_dot, U, V):
     # print("\n------------POSITION AND VELOCITY------------\n")
+    R = [r_k * x for x in U]
 
-    x = r_k * Ux
-    y = r_k * Uy
-    z = r_k * Uz
+    R_dot = [r_dot * u + r_v_dot * v for (u,v) in zip(U,V)]
 
-    x_dot = r_dot * Ux + r_v_dot * Vx
-    y_dot = r_dot * Uy + r_v_dot * Vy
-    z_dot = r_dot * Uz + r_v_dot * Vz
+    # x_dot = r_dot * Ux + r_v_dot * Vx
+    # y_dot = r_dot * Uy + r_v_dot * Vy
+    # z_dot = r_dot * Uz + r_v_dot * Vz
 
-    # print("r =")
-    # print("    ", x)
-    # print("    ", y)
-    # print("    ", z)
+    return (R, R_dot)
 
-    # print("r_dot =")
-    # print("    ", x_dot)
-    # print("    ", y_dot)
-    # print("    ", z_dot)
-
+def convert_to_km_and_seconds(R, R_dot):
     # print("\n------------CONVERTING TO KM AND SECONDS-----------\n")
-    x *= ER_TO_KM
-    y *= ER_TO_KM
-    z *= ER_TO_KM
+    R = [ER_TO_KM * x for x in R]
 
-    x_dot *= ER_TO_KM / MINUTES_TO_SECONDS
-    y_dot *= ER_TO_KM / MINUTES_TO_SECONDS
-    z_dot *= ER_TO_KM / MINUTES_TO_SECONDS
-    print("Time since epoch =", t, "minutes")
+    R_dot = [ER_TO_KM / MINUTES_TO_SECONDS * x_dot for x_dot in R_dot]
+
+    return (R, R_dot)
+
+def sgp(t, n0_dot, n0_double_dot, i0, omega0,e0, w0, M0, n0):
+    k_e, J2, J3, aE, cos_i0, sin_i0, a0, q0, L0, d_omega_dt, dw_dt \
+        = initialize_constants(t, n0_dot, n0_double_dot, i0, omega0,e0, w0, M0, n0)
+
+    a, e, p, omega_s0, w_s0, Ls \
+        = secular_gravity_and_atmospheric_drag(t, n0, n0_dot, a0, q0, omega0, d_omega_dt, w0, dw_dt, L0)
+
+    a_xNSL, a_yNSL, L \
+        = long_period_periodics(e, w_s0, Ls, J2, J3, aE, p, cos_i0, sin_i0)
+
+    E, cosE, sinE \
+        = keplers_equation(L, omega_s0, a_xNSL, a_yNSL)
+
+    pL, r, r_dot, r_v_dot, sinU, cosU, u \
+        = short_period_preliminary_quantities(a_xNSL, a_yNSL, cosE, sinE, k_e, a)
+
+    r_k, u_k, omega_k, i_k \
+        = update_for_short_periodics(cosU, sinU, pL, r , J2, aE, sin_i0, cos_i0, omega_s0, u)
+
+    U, V = \
+        orientation_vectors(u_k, omega_k, i_k)
+    
+    R, R_dot = \
+        position_and_velocity(r_k, r_dot, r_v_dot, U, V)
+
+    R, R_dot = \
+        convert_to_km_and_seconds(R, R_dot)
+    
+    return (R, R_dot)
+
+def print_state_vectors(R, R_dot):
     print("r =")
-    print("    ", x)   
-    print("    ", y)   
-    print("    ", z)   
-
+    for x in R:
+        print("    ", x)
+    
     print("r_dot =")
-    print("    ", x_dot)
-    print("    ", y_dot)
-    print("    ", z_dot)    
+    for x_dot in R_dot:
+        print("    ", x_dot)
+
+        
 #print("{0}\n".format(lines))
 
 satellite_name = format(lines[0].strip())
@@ -372,9 +390,13 @@ print("Checksum:                                        " + str(lines[2][68:70].
 print("\n\n\n-------------SGP VALUES------------\n\n\n")
 t = 0
 while t <= 1440:
-    sgp(t)
-    t += 360
+    R, R_dot = sgp(t, n0_dot, n0_double_dot, i0, omega0,e0, w0, M0, n0)
+    print("Time since epoch =", t, "minutes")
+    print_state_vectors(R, R_dot)
+
     #Print new version of tle after epoch t
     print("The TLE after time " + str(t) + " is:")
     print(satellite_name)
     print("1 " + str(satellite_number) + str(classification) + " " + str(launch_number) + str(launch_number) + str(peice) + " " + str(epoch_year) + str(epoch_day) + "." + str(int(epoch_day_fraction) + int(t)))
+    
+    t += 360
